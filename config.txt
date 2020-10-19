@@ -1,0 +1,15 @@
+flights_20_500k_semicolon_selected-columns.csv
+FastOD
+10000
+30
+1
+,
+PruneTrue
+InterestingnessPruneTrueF
+100000000000
+100
+BidirectionalTrueF
+RankDoubleTrue
+ReverseRankingTrueF
+BidirectionalPruneTrueF
+9999
