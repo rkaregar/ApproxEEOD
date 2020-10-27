@@ -41,6 +41,11 @@ public class ODAlgorithm {
 
     private List<String> columnNamesList;
     private List<List<String>> rowList;
+    
+    
+    public int numOfAOD1 = 0, numofAOD2;
+    public long timeAOD1 = 0, timeAOD2;
+    public double improvementPercentage;
 
 
     //OD
@@ -214,6 +219,15 @@ public class ODAlgorithm {
 
             //Combine the AODs and the ODFDs together into one
             System.out.println("--------END----------");
+            
+            
+            
+            // TODO I don't know where else to put this stuff
+            System.out.println("----------Approx comaprisons------------");
+            System.out.println("num: " + numOfAOD1 + " vs. " + numofAOD2 + ", thus: " + ((numOfAOD1 * 100. / numofAOD2) - 100));
+            System.out.println("time: " + timeAOD1 + " vs. " + timeAOD2 + ", thus: " + (100 - (timeAOD1 * 100. / timeAOD2)));
+            System.out.println("improvement: " + (improvementPercentage * 100 / numofAOD2));
+            System.out.println("----------------------------------------");
         }
         return;
     }
@@ -635,9 +649,21 @@ public class ODAlgorithm {
                     //                    for(int j=0; j<PI_X_TAU_A.size64() && (!swapHappen); j ++){
                     //                      for(int j=0; j<PI_X_TAU_A.size64() && (numSwaps < MainClass.swapThreshold); j ++){
                     //if(MainClass.approxODBoolean){ //todel
+    
+                    long tAOD1 = System.nanoTime();
+//                    long actualScore = CandidateLIS.computeLIS(PI_X_TAU_A, bValues);
+                    long actualScore = 0;
+                    if (actualScore < MainClass.violationThreshold) {
+                        numOfAOD1 += 1;
+                    }
+                    System.out.println("----- actual ratio:" + (((double)actualScore) / numberTuples));
+                    timeAOD1 += (System.nanoTime() - tAOD1);
+                    
+                    long tAOD2 = System.nanoTime();
+                    
                     while(violationCriteria == true){
-                        //                        ObjectBigArrayBigList<ObjectBigArrayBigList<LongBigArrayBigList>> PI_X_TAU_A_Copy =
-                        PI_X_TAU_A.clone();
+//                        ObjectBigArrayBigList<ObjectBigArrayBigList<LongBigArrayBigList>> PI_X_TAU_A_Copy =
+//                        PI_X_TAU_A.clone();
 
 
                         ViolationsTable.clear();
@@ -692,7 +718,7 @@ public class ODAlgorithm {
                             if(ViolationsTable.isEmpty()){
                                 violationCriteria = false;
                             }else{
-                                System.out.println(ViolationsTable);
+//                                System.out.println(ViolationsTable);  // Decluttered the output
                                 //if we have entires in the violations table
                                 int maxSize = 0;
                                 violationToRemove = null;
@@ -709,9 +735,9 @@ public class ODAlgorithm {
                                     }
                                     //it.remove();
                                 }
-                                System.out.println("remove " + violationToRemove);
-                                if (ViolationsTable.get(violationToRemove).size() > 2)
-                                    System.out.println(ViolationsTable.get(violationToRemove));
+//                                System.out.println("remove " + violationToRemove);  // Decluttered the output
+//                                if (ViolationsTable.get(violationToRemove).size() > 2)
+//                                    System.out.println(ViolationsTable.get(violationToRemove));
                                 
                                 toRemove.add(violationToRemove);
                                 violationCriteria = true;
@@ -726,6 +752,9 @@ public class ODAlgorithm {
                             violationCriteria = false;
                         }
                     }
+                    
+                    timeAOD2 += (System.nanoTime() - tAOD2);
+                    
                     //}//del
 
                     //Debug hashmap
@@ -799,7 +828,12 @@ public class ODAlgorithm {
                         double violationRatio = (double) violationIterations/numberTuples;
 
                         System.out.println("***** violationRatio:" + violationRatio);
-
+    
+                        numofAOD2 += 1;
+//                        long actualScore2 = CandidateLIS.computeLIS(PI_X_TAU_A, bValues);
+//                        System.out.println("----- actual ratio:" + (((double)actualScore2) / numberTuples));
+//
+                        improvementPercentage += (violationRatio - (((double)actualScore) / numberTuples)) / violationRatio;
                     }
                     //                    }
                 }
