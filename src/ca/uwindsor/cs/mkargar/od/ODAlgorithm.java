@@ -43,8 +43,8 @@ public class ODAlgorithm {
     private List<List<String>> rowList;
     
     
-    public int numOfAOD1 = 0, numofAOD2;
-    public long timeAOD1 = 0, timeAOD2;
+    public int numOfAODLIS = 0, numofAODGreedy;
+    public long timeAODLIS = 0, timeAODGreedy;
     public double improvementPercentage;
 
 
@@ -224,9 +224,9 @@ public class ODAlgorithm {
             
             // TODO I don't know where else to put this stuff
             System.out.println("----------Approx comaprisons------------");
-            System.out.println("num: " + numOfAOD1 + " vs. " + numofAOD2 + ", thus: " + ((numOfAOD1 * 100. / numofAOD2) - 100));
-            System.out.println("time: " + timeAOD1 + " vs. " + timeAOD2 + ", thus: " + (100 - (timeAOD1 * 100. / timeAOD2)));
-            System.out.println("improvement: " + (improvementPercentage * 100 / numofAOD2));
+            System.out.println("num: " + numOfAODLIS + " vs. " + numofAODGreedy + ", thus: " + ((numOfAODLIS * 100. / numofAODGreedy) - 100));
+            System.out.println("time: " + timeAODLIS + " vs. " + timeAODGreedy + ", thus: " + (100 - (timeAODLIS * 100. / timeAODGreedy)));
+            System.out.println("improvement: " + (improvementPercentage * 100 / numofAODGreedy));
             System.out.println("----------------------------------------");
         }
         return;
@@ -650,196 +650,71 @@ public class ODAlgorithm {
                     //                      for(int j=0; j<PI_X_TAU_A.size64() && (numSwaps < MainClass.swapThreshold); j ++){
                     //if(MainClass.approxODBoolean){ //todel
     
-                    long tAOD1 = System.nanoTime();
-                    long actualScore = CandidateLIS.computeLIS(PI_X_TAU_A, bValues);
-//                    long actualScore = 0;
-                    if (actualScore < MainClass.violationThreshold) {
-                        numOfAOD1 += 1;
-                    }
-                    System.out.println("----- actual ratio:" + (((double)actualScore) / numberTuples));
-                    timeAOD1 += (System.nanoTime() - tAOD1);
                     
-                    long tAOD2 = System.nanoTime();
+                    swapHappen = CandidateSwap.hasSwap(PI_X_TAU_A, bValues);
+                    
+                    int numRemovalLIS = -2, numRemovalGreedy = -2;
+                    
+                    if (swapHappen && (MainClass.approxAlgo.equals("LIS") || MainClass.approxAlgo.equals("Both"))) {
+                        long tAOD1 = System.nanoTime();
+                        
+                        numRemovalLIS = CandidateLIS.computeLIS(PI_X_TAU_A, bValues);
+                        
+//                        if (numRemovalLIS <= MainClass.violationThreshold) {
+//                            numOfAOD1 += 1;
+//                        }
+//                        System.out.println("----- actual ratio:" + (((double)numRemovalLIS) / numberTuples));
+                        
+                        timeAODLIS += (System.nanoTime() - tAOD1);
+                    }
+                    
+                    if (swapHappen && (MainClass.approxAlgo.equals("Greedy") || MainClass.approxAlgo.equals("Both"))) {
+                        long tAOD2 = System.nanoTime();
+                        
+                        CandidateGreedyApprox cga = new CandidateGreedyApprox(PI_X_TAU_A, bValues);
+                        numRemovalGreedy = cga.getRepairNum(MainClass.violationThreshold);
+                        
+//                        System.out.println("----- greedy ratio:" + (((double)numViol) / numberTuples));
+                        timeAODGreedy += (System.nanoTime() - tAOD2);
+                    }
     
-                    CandidateGreedyApprox cga = new CandidateGreedyApprox(PI_X_TAU_A, bValues);
-                    int numViol = cga.getRepairNum(MainClass.violationThreshold);
-                    System.out.println("----- greedy ratio:" + (((double)numViol) / numberTuples));
-                    
-                    while(violationCriteria == true){
-//                        ObjectBigArrayBigList<ObjectBigArrayBigList<LongBigArrayBigList>> PI_X_TAU_A_Copy =
-//                        PI_X_TAU_A.clone();
-
-
-                        ViolationsTable.clear();
-                        for(int j=0; j<PI_X_TAU_A.size64(); j ++){
-                            ObjectBigArrayBigList oneListInX = PI_X_TAU_A.get(j);
-
-                            //                        for(int i=0; i < oneListInX.size64()-1 && (!swapHappen); i ++){
-                            for(int i=0; i < oneListInX.size64()-1; i ++){
-                                LongBigArrayBigList List1 = (LongBigArrayBigList)oneListInX.get(i);
-                                LongBigArrayBigList List2 = (LongBigArrayBigList)oneListInX.get(i+1);
-
-                                //A.compareTo(B) < 0 => A<B
-                                //A.compareTo(B) > 0 => A>B
-
-                                //check to make sure a swap does not happen between List1 and List2 with respect to A and B
-                                int maxB_inList1 = -1;
-                                maxB_index =-1;
-                                for(long index1 : List1){
-                                    int value = bValues.get(index1);
-                                    if(value > maxB_inList1 && !(toRemove.contains(index1))){
-                                        maxB_inList1 = value;
-                                        maxB_index = index1;
-                                    }
-                                }
-
-                                int minB_inList2 = Integer.MAX_VALUE;
-                                minB_index = -1;
-                                for(long index2 : List2){
-                                    int value = bValues.get(index2);
-                                    if(value < minB_inList2 && !(toRemove.contains(index2))){
-                                        minB_inList2 = value;
-                                        minB_index = index2;
-                                    }
-                                }
-
-                                //NO Swap: maxB_inList1 < minB_inList2
-                                //Swap: maxB_inList1 > minB_inList2
-                                if(maxB_inList1 > minB_inList2) {
-                                    //                                  System.out.println(maxB_inList1);
-                                    //                                  System.out.println(minB_inList2);
-                                    swapHappen = true;
-                                    numSwaps++;
-
-                                    ViolationsTableAdd(maxB_index, minB_index);
-                                    ViolationsTableAdd(minB_index, maxB_index);
-                                }
-                            }
-                        }
-
-                        if(MainClass.violationThreshold > 0 || !MainClass.approxODBoolean){
-
-                            if(ViolationsTable.isEmpty()){
-                                violationCriteria = false;
-                            }else{
-//                                System.out.println(ViolationsTable);  // Decluttered the output
-                                //if we have entires in the violations table
-                                int maxSize = 0;
-                                violationToRemove = null;
-
-                                //iterate over the violations table
-                                Iterator it = ViolationsTable.entrySet().iterator();
-                                while (it.hasNext()) {
-                                    Map.Entry pair = (Map.Entry)it.next();
-
-                                    //if the entry in the table has the most violations
-                                    if (ViolationsTable.get((Long) pair.getKey()).size() > maxSize){
-                                        violationToRemove = (Long) pair.getKey();
-                                        maxSize = ViolationsTable.get((Long) pair.getKey()).size();
-                                    }
-                                    //it.remove();
-                                }
-//                                System.out.println("remove " + violationToRemove);  // Decluttered the output
-//                                if (ViolationsTable.get(violationToRemove).size() > 2)
-//                                    System.out.println(ViolationsTable.get(violationToRemove));
-                                
-                                toRemove.add(violationToRemove);
-                                violationCriteria = true;
-
-
-                                if (violationIterations > MainClass.violationThreshold){
-                                    violationCriteria = false;
-                                }
-                                violationIterations++;
-                            }
-                        }else{
-                            violationCriteria = false;
-                        }
-                    }
-                    
-                    timeAOD2 += (System.nanoTime() - tAOD2);
-                    
-                    //}//del
-
-                    //Debug hashmap
-                    //                    System.out.println("START OF VIOLATIONS");
-                    //                    printOpenBitSetNames("", X_minus_AB, oneAB);
-                    //                    System.out.println("numSwaps:" + numSwaps);
-                    //
-                    //                    printMap(ViolationsTable);
-                    //                    System.out.println("END OF VIOLATIONS");
-
-                    long L6 = System.currentTimeMillis();
-                    TimeToCompareAB += (L6 - L5);
-
-                    //                    if(!swapHappen){
-                    //                    if(numSwaps  <  MainClass.swapThreshold){
-
-                    if (toRemove.isEmpty()){
-
+                    if (!swapHappen) {  // An exact valid OD
                         //FINDING SCORE OF ONE ANSWER
                         BigInteger score = BigInteger.valueOf(0);
-                        if(!XScoreMap.containsKey(X_minus_AB)){
+                        if (!XScoreMap.containsKey(X_minus_AB)) {
                             score = calculateInterestingnessScore(strippedPartition_X_minus_AB, X_minus_AB);
                             XScoreMap.put(X_minus_AB, score);
-                        }else{
+                        } else {
                             score = XScoreMap.get(X_minus_AB);
                         }
-
                         FDODScore fdodScore = new FDODScore(score, X_minus_AB, oneAB);
                         FDODScoreList.add(fdodScore);
                         //calculate interestingness score
-
-                        numberOfOD ++;
-                        // System.out.println("****** OD A SIM B is Found #" + numberOfOD);
-                        //                            System.out.println("OD#" + (answerCountOD++) + "#SCORE#" + score + "#L#" + L );
-                        //                            printOpenBitSetNames(score + "#" +numberOfOD+ "#L#" + L + "#OD:#", X_minus_AB, oneAB);
-                        //                            System.out.println("Swaps: " + numSwaps);
-                        //System.out.println(score);
-                        //                        System.out.println("");
-
+                        numberOfOD++;
                         removeFromC_s_List.add(oneAB);
-                    }else if ((violationIterations < MainClass.violationThreshold) && MainClass.approxODBoolean){
-                        //Approx OD
-                        String AODString = printOpenBitSetNames("Approx OCD: ", X_minus_AB, oneAB);
-
-                        //Finding Score of One Approx OD.
-                        //Right now this is the same procedure as FDs. Need a little bit of direction, might need to change later
-                        //to exclude removed rows.
-
-                        //FINDING SCORE OF ONE ANSWER
-                        BigInteger score = BigInteger.valueOf(0);
-                        if(!XScoreMap.containsKey(X_minus_AB)){
-                            score = calculateInterestingnessScore(strippedPartition_X_minus_AB, X_minus_AB);
-                            XScoreMap.put(X_minus_AB, score);
-                        }else{
-                            score = XScoreMap.get(X_minus_AB);
+                    } else {
+                        if (numRemovalLIS != -2 && numRemovalLIS < MainClass.violationThreshold && MainClass.approxODBoolean) {
+//                        String AODString = printOpenBitSetNames("Approx OCD, LIS: ", X_minus_AB, oneAB);
+//                        BigInteger score = BigInteger.valueOf(0);
+//                        if(!XScoreMap.containsKey(X_minus_AB)){
+//                            score = calculateInterestingnessScore(strippedPartition_X_minus_AB, X_minus_AB);
+//                            XScoreMap.put(X_minus_AB, score);
+//                        }else{
+//                            score = XScoreMap.get(X_minus_AB);
+//                        }
+//                        FDODScore fdodScore = new FDODScore(score, X_minus_AB, oneAB, true);
+                            numOfAODLIS++;
+                            double violationRatio = (double) numRemovalLIS/numberTuples;
+                            System.out.println("***** violationRatio LIS:" + violationRatio);
                         }
-
-                        FDODScore fdodScore = new FDODScore(score, X_minus_AB, oneAB, true);
-                        //FDAODScoreList.add(fdodScore);
-                        //System.out.println(fdodScore.score);
-                        AODString = AODString + "$" + fdodScore.score;
-
-                        // System.out.println("Rows Removed: " + toRemove.size());
-                        //                            for(int i = 0; i < toRemove.size(); i++){
-                        //                                System.out.println(toRemove.get(i));
-                        //                            }
-                        //System.out.println("DEBUG: " + AODString);
-                        //AODString = 0 + "$" + AODString + "$" + "N/A";
-                        numberOfAOD++;
-
-                        double violationRatio = (double) violationIterations/numberTuples;
-
-                        System.out.println("***** violationRatio:" + violationRatio);
     
-                        numofAOD2 += 1;
-//                        long actualScore2 = CandidateLIS.computeLIS(PI_X_TAU_A, bValues);
-//                        System.out.println("----- actual ratio:" + (((double)actualScore2) / numberTuples));
-//
-                        improvementPercentage += (violationRatio - (((double)actualScore) / numberTuples)) / violationRatio;
+                        if (numRemovalGreedy > 0 && numRemovalGreedy < MainClass.violationThreshold && MainClass.approxODBoolean) {
+                            numofAODGreedy++;
+                            double violationRatio = (double) numRemovalGreedy/numberTuples;
+                            System.out.println("***** violationRatio Greedy:" + violationRatio);
+                        }
                     }
-                    //                    }
+                    // improvementPercentage += (violationRatio - (((double)actualScore) / numberTuples)) / violationRatio;
                 }
             }
 

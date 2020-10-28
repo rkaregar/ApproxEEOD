@@ -66,6 +66,7 @@ public class MainClass {
 
     public static Boolean approxODBoolean = true;
     public static Integer violationThreshold = 2; // TODO: 3/17/20 set appropriate value
+    public static String approxAlgo = "Both";  // options are "LIS", "Greedy", "Both", and "None"
 
 
     public static void main(String[] args) {
