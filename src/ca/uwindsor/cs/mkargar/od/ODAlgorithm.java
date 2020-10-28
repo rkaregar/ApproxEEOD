@@ -651,8 +651,8 @@ public class ODAlgorithm {
                     //if(MainClass.approxODBoolean){ //todel
     
                     long tAOD1 = System.nanoTime();
-//                    long actualScore = CandidateLIS.computeLIS(PI_X_TAU_A, bValues);
-                    long actualScore = 0;
+                    long actualScore = CandidateLIS.computeLIS(PI_X_TAU_A, bValues);
+//                    long actualScore = 0;
                     if (actualScore < MainClass.violationThreshold) {
                         numOfAOD1 += 1;
                     }
@@ -660,6 +660,10 @@ public class ODAlgorithm {
                     timeAOD1 += (System.nanoTime() - tAOD1);
                     
                     long tAOD2 = System.nanoTime();
+    
+                    CandidateGreedyApprox cga = new CandidateGreedyApprox(PI_X_TAU_A, bValues);
+                    int numViol = cga.getRepairNum(MainClass.violationThreshold);
+                    System.out.println("----- greedy ratio:" + (((double)numViol) / numberTuples));
                     
                     while(violationCriteria == true){
 //                        ObjectBigArrayBigList<ObjectBigArrayBigList<LongBigArrayBigList>> PI_X_TAU_A_Copy =

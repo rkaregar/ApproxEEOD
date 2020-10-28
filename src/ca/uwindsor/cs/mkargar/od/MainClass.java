@@ -65,7 +65,7 @@ public class MainClass {
 
 
     public static Boolean approxODBoolean = true;
-    public static Integer violationThreshold = 0; // TODO: 3/17/20 set appropriate value
+    public static Integer violationThreshold = 2; // TODO: 3/17/20 set appropriate value
 
 
     public static void main(String[] args) {
