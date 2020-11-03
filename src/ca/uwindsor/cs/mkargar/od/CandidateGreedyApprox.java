@@ -3,10 +3,7 @@ package ca.uwindsor.cs.mkargar.od;
 import it.unimi.dsi.fastutil.longs.LongBigArrayBigList;
 import it.unimi.dsi.fastutil.objects.ObjectBigArrayBigList;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 public class CandidateGreedyApprox {
     private ObjectBigArrayBigList<ObjectBigArrayBigList<LongBigArrayBigList>> PI_X_TAU_A;
@@ -40,7 +37,9 @@ public class CandidateGreedyApprox {
         for (int j = 0; j < PI_X_TAU_A.size64(); j++) {
             ObjectBigArrayBigList oneListInX = PI_X_TAU_A.get(j);
             
-            Node tail = getSwapCounts(oneListInX);
+//            Node tail = getSwapCounts(oneListInX);
+            Node tail = getBetterSwapCounts(oneListInX);
+            
             tailNode = tail;
 //            while (tail != null && tail.prev != null && removedCnt < limit) {
             while (tailNode != null) {
@@ -155,7 +154,7 @@ public class CandidateGreedyApprox {
     
     private Node getSwapCounts(ObjectBigArrayBigList oneListInX) {
         Node curNode = null;
-        ArrayList<TupIDSwapPair> swapCounts = new ArrayList<>();
+        ArrayList<TupIDSwapPair> swapCounts = new ArrayList<>();  // index i stores the num of swaps of tuple i
         for (int i = 0; i < bValues.size64(); i++) {
             swapCounts.add(i, new TupIDSwapPair(i, 0));
         }
@@ -187,6 +186,91 @@ public class CandidateGreedyApprox {
             }
         }
         return curNode;
+    }
+    
+    private Node getBetterSwapCounts(ObjectBigArrayBigList oneListInX) {
+        Node curNode = null;
+        ArrayList<TupIDSwapPair> swapCounts = new ArrayList<>();  // index i stores the num of swaps of tuple i
+        for (int i = 0; i < bValues.size64(); i++) {
+            swapCounts.add(i, new TupIDSwapPair(i, 0));
+        }
+        List<TupIDSwapPair> allIdVals = new ArrayList<>();  // TODO: this uses 'swapCount' to store bValue, probably could use some refactoring
+        for (int i = 0; i < oneListInX.size64(); i++) {
+            LongBigArrayBigList List1 = (LongBigArrayBigList) oneListInX.get(i);
+        
+            List<TupIDSwapPair> idBs = new ArrayList<>();
+            for (long index1 : List1) {
+                int value = bValues.get(index1);
+                idBs.add(new TupIDSwapPair(index1, value));
+            }
+            Collections.sort(idBs);
+            allIdVals.addAll(idBs);
+        }
+    
+        sortAndCount(allIdVals, swapCounts, 0, allIdVals.size() - 1);
+        
+        Collections.sort(swapCounts);
+        for (TupIDSwapPair swapCount : swapCounts) {
+            if (swapCount.swapCnt > 0) {
+                if (curNode == null) {
+                    curNode = new Node(swapCount.tupId, swapCount.swapCnt, null, null);
+                } else {
+                    Node n2 = new Node(swapCount.tupId, swapCount.swapCnt, null, curNode);
+                    curNode.addAfter(n2);
+                    curNode = n2;
+                }
+            }
+        }
+        return curNode;
+    }
+    
+    // 'a' and 'b' are both inclusive
+    private void sortAndCount(List<TupIDSwapPair> allIdVals, ArrayList<TupIDSwapPair> swapCounts, int a, int b) {
+        if (a == b)
+            return;
+        int m = (a + b) / 2;  // recurse on [a, m] and [m + 1, b]
+        sortAndCount(allIdVals, swapCounts, a, m);
+        sortAndCount(allIdVals, swapCounts, m + 1, b);
+        mergeAndCount(allIdVals, swapCounts, a, m, b);
+    }
+    
+    private void mergeAndCount(List<TupIDSwapPair> allIdVals, ArrayList<TupIDSwapPair> swapCounts, int a, int m, int b) {
+        List<TupIDSwapPair> tmpRes = new ArrayList<>();
+        int tmpId;
+        
+        for (int i = a; i <= b; i++) {
+            tmpRes.add(null);
+        }
+        int i = a, j = m + 1, cnt = 0;
+        while (i <= m || j <= b) {
+            if (i <= m && j > b) {
+                tmpRes.set(cnt, allIdVals.get(i));
+                tmpId = (int) allIdVals.get(i).tupId;
+                swapCounts.get(tmpId).swapCnt += (b - m);
+                i++;
+                cnt++;
+            } else if (i > m && j <= b) {
+                tmpRes.set(cnt, allIdVals.get(j));
+                j++;
+                cnt++;
+            } else {
+                if (allIdVals.get(i).swapCnt <= allIdVals.get(j).swapCnt) {
+                    tmpRes.set(cnt, allIdVals.get(i));
+                    tmpId = (int) allIdVals.get(i).tupId;
+                    swapCounts.get(tmpId).swapCnt += (j - m - 1);
+                    i++;
+                } else {
+                    tmpRes.set(cnt, allIdVals.get(j));
+                    tmpId = (int) allIdVals.get(j).tupId;
+                    swapCounts.get(tmpId).swapCnt += (m - i + 1);
+                    j++;
+                }
+                cnt++;
+            }
+        }
+        for (int k = 0; k < tmpRes.size(); k++) {
+            allIdVals.set(a + k, tmpRes.get(k));
+        }
     }
 }
 

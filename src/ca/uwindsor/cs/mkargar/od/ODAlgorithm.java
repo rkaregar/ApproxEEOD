@@ -693,6 +693,7 @@ public class ODAlgorithm {
                         numberOfOD++;
                         removeFromC_s_List.add(oneAB);
                     } else {
+                        double violationRatioLIS = -1, violationRatioGreedy = -1;
                         if (numRemovalLIS != -2 && numRemovalLIS < MainClass.violationThreshold && MainClass.approxODBoolean) {
 //                        String AODString = printOpenBitSetNames("Approx OCD, LIS: ", X_minus_AB, oneAB);
 //                        BigInteger score = BigInteger.valueOf(0);
@@ -704,17 +705,21 @@ public class ODAlgorithm {
 //                        }
 //                        FDODScore fdodScore = new FDODScore(score, X_minus_AB, oneAB, true);
                             numOfAODLIS++;
-                            double violationRatio = (double) numRemovalLIS/numberTuples;
-                            System.out.println("***** violationRatio LIS:" + violationRatio);
+                            violationRatioLIS = (double) numRemovalLIS/numberTuples;
+                            System.out.println("***** violationRatio LIS:" + violationRatioLIS);
                         }
-    
                         if (numRemovalGreedy > 0 && numRemovalGreedy < MainClass.violationThreshold && MainClass.approxODBoolean) {
                             numofAODGreedy++;
-                            double violationRatio = (double) numRemovalGreedy/numberTuples;
-                            System.out.println("***** violationRatio Greedy:" + violationRatio);
+                            violationRatioGreedy = (double) numRemovalGreedy/numberTuples;
+                            System.out.println("***** violationRatio Greedy:" + violationRatioGreedy);
+                        }
+                        
+                        if (MainClass.approxAlgo.equals("Both") && numRemovalGreedy > 0) {
+                            improvementPercentage += (violationRatioGreedy - violationRatioLIS) / violationRatioGreedy;
+                            if ((violationRatioGreedy - violationRatioLIS) / violationRatioGreedy > 0)
+                                System.out.println("yo look at this " + ((violationRatioGreedy - violationRatioLIS) / violationRatioGreedy * 100));
                         }
                     }
-                    // improvementPercentage += (violationRatio - (((double)actualScore) / numberTuples)) / violationRatio;
                 }
             }
 
@@ -754,7 +759,7 @@ public class ODAlgorithm {
         return score;
     }
 
-    private int numberOfOD = 0;
+    public int numberOfOD = 0;
     private int numberOfAOD = 0;
 
     private OpenBitSet[] getSeparateOpenBitSet_AB(OpenBitSet oneAB){

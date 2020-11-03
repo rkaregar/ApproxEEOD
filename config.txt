@@ -1,7 +1,7 @@
 flights_20_500k_semicolon_selected-columns.csv
 FastOD
 1000
-30
+10
 1
 ,
 PruneTrue
@@ -13,3 +13,5 @@ RankDoubleTrue
 ReverseRankingTrueF
 BidirectionalPruneTrueF
 9999
+1
+Both

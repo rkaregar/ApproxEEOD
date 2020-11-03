@@ -65,7 +65,7 @@ public class MainClass {
 
 
     public static Boolean approxODBoolean = true;
-    public static Integer violationThreshold = 2; // TODO: 3/17/20 set appropriate value
+    public static Integer violationThreshold = 5; // TODO: 3/17/20 set appropriate value
     public static String approxAlgo = "Both";  // options are "LIS", "Greedy", "Both", and "None"
 
 
@@ -128,6 +128,10 @@ public class MainClass {
                 BidirectionalPruneTrue = true;
 
             ReverseRankingPercentage = Integer.parseInt(br.readLine().trim());
+            
+            // New additions to the config file
+            violationThreshold = Integer.parseInt(br.readLine().trim());
+            approxAlgo = br.readLine().trim();
 
         }catch (Exception ex){
             ex.printStackTrace();
@@ -147,6 +151,7 @@ public class MainClass {
         System.out.println("BidirectionalTrue: " + BidirectionalTrue);
         System.out.println("BidirectionalPruneTrue: " + BidirectionalPruneTrue);
 
+        long runt = -1;
         try {
             long startTime = System.currentTimeMillis();
 
@@ -168,13 +173,36 @@ public class MainClass {
             long runTime = (endTime - startTime)/RunTimeNumber;
 
             System.out.println("Run Time (ms): " + runTime);
+            
+            runt = runTime;
         }catch(Exception ex){
             System.out.println("Error");
             ex.printStackTrace();
         }
 
         printTime();
-
+    
+        //print results to a file
+        try {
+            BufferedWriter bw =
+                    new BufferedWriter(new FileWriter("logs/" + DatasetFileName + "-" + MaxRowNumber + "r-" + MaxColumnNumber + "c-" + approxAlgo + ".txt"));
+            
+            bw.write(runt + "\truntime (ms)\n");
+            bw.write(ODAlgorithm.numberOfOD + "\t# of OD\n");
+            bw.write(ODAlgorithm.numOfAODLIS + "\t# of AOD lis\n");
+            bw.write(ODAlgorithm.numofAODGreedy + "\t# of AOD iterative\n");
+            bw.write((ODAlgorithm.timeAODLIS / 1000000) + "\ttime iterative (ms)\n");
+            bw.write((ODAlgorithm.timeAODGreedy / 1000000) + "\ttime iterative (ms)\n");
+            bw.write((ODAlgorithm.improvementPercentage * 100 / ODAlgorithm.numofAODGreedy) + "\timprovement %\n");
+//            for(String str : odList)
+//                bw.write(str + "\n");
+        
+            bw.close();
+        } catch(Exception ex){
+            System.out.println("Writing output failed.");
+        }
+    
+        
         //print results to a file
         try {
             BufferedWriter bw =
