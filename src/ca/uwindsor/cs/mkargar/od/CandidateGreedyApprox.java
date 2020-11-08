@@ -46,7 +46,7 @@ public class CandidateGreedyApprox {
                 long tup2go = tailNode.tupId;
                 removedCnt++;
                 
-                if (removedCnt > limit)
+                if (removedCnt > limit + 10)  // TODO check on this in the future, +10 might use some improvements
                     return -1;
                 
                 HashSet<Long> updated = getUpdatedTuples(tup2go, oneListInX);

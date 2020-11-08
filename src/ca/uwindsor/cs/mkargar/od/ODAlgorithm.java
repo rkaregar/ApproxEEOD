@@ -46,8 +46,16 @@ public class ODAlgorithm {
     public int numOfAODLIS = 0, numofAODGreedy;
     public long timeAODLIS = 0, timeAODGreedy;
     public double improvementPercentage;
-
-
+    // I believe this design could still be improved, even though it works perfectly fine
+    public List<FDODScore> greedyMissed;
+    public List<Integer> greedyMissedNumbers;
+    public List<FDODScore> greedyDifferent;
+    public List<Integer> greedyDifferentNumbers;
+    StringBuilder missedODFDString, differentODFDString;
+    
+    
+    
+    
     //OD
     //for each attribute, in order, we have a list of its partition, sorted based on their values in ASC order
     ArrayList<ObjectBigArrayBigList<LongBigArrayBigList>> TAU_SortedList;
@@ -66,7 +74,15 @@ public class ODAlgorithm {
 
         FDODScoreList = new ArrayList<FDODScore>();
         FDAODScoreList = new ArrayList<FDODScore>();
-
+        greedyMissed = new ArrayList<>();
+        greedyMissedNumbers = new ArrayList<>();
+        greedyDifferent = new ArrayList<>();
+        greedyDifferentNumbers = new ArrayList<>();
+        missedODFDString = new StringBuilder();
+        differentODFDString = new StringBuilder();
+    
+    
+    
         long start1 = System.currentTimeMillis();
 
         level0 = new Object2ObjectOpenHashMap<OpenBitSet, CombinationHelper>();
@@ -227,7 +243,26 @@ public class ODAlgorithm {
             System.out.println("num: " + numOfAODLIS + " vs. " + numofAODGreedy + ", thus: " + ((numOfAODLIS * 100. / numofAODGreedy) - 100));
             System.out.println("time: " + timeAODLIS + " vs. " + timeAODGreedy + ", thus: " + (100 - (timeAODLIS * 100. / timeAODGreedy)));
             System.out.println("improvement: " + (improvementPercentage * 100 / numofAODGreedy));
-            System.out.println("----------------------------------------");
+            System.out.println("-----------------Different AODs--------------------");
+            
+            for (int i = 0; i < greedyDifferent.size(); i++) {
+                FDODScore score = greedyDifferent.get(i);
+                String nums = greedyDifferentNumbers.get(2 * i) + ", " + greedyDifferentNumbers.get(2 * i + 1) + ", " +
+                        ((double)greedyDifferentNumbers.get(2 * i) * 100 / numberTuples) + ", " +
+                        ((double)greedyDifferentNumbers.get(2 * i + 1) * 100 / numberTuples);
+                differentODFDString.append(printOpenBitSetNames("AOD: ", score.X_minus_AB, score.oneAB)).append(": ").append(nums).append('\n');
+                System.out.println(greedyDifferentNumbers.get(2 * i) + ", " + greedyDifferentNumbers.get(2 * i + 1));
+            }
+            System.out.println("------------------Missed AODs----------------------");
+            for (int i = 0; i < greedyMissed.size(); i++) {
+                FDODScore score = greedyMissed.get(i);
+                String nums = greedyMissedNumbers.get(2 * i) + ", " + greedyMissedNumbers.get(2 * i + 1) + ", " +
+                        ((double)greedyMissedNumbers.get(2 * i) * 100 / numberTuples) + ", " +
+                        ((double)greedyMissedNumbers.get(2 * i + 1) * 100 / numberTuples);
+                missedODFDString.append(printOpenBitSetNames("AOD: ", score.X_minus_AB, score.oneAB)).append(": ").append(nums).append('\n');
+                System.out.println(greedyMissedNumbers.get(2 * i) + ", " + greedyMissedNumbers.get(2 * i + 1));
+            }
+            System.out.println("---------------------------------------------------");
         }
         return;
     }
@@ -694,6 +729,7 @@ public class ODAlgorithm {
                         removeFromC_s_List.add(oneAB);
                     } else {
                         double violationRatioLIS = -1, violationRatioGreedy = -1;
+                        boolean isApproxLIS = false, isApproxGreedy = false;
                         if (numRemovalLIS != -2 && numRemovalLIS < MainClass.violationThreshold && MainClass.approxODBoolean) {
 //                        String AODString = printOpenBitSetNames("Approx OCD, LIS: ", X_minus_AB, oneAB);
 //                        BigInteger score = BigInteger.valueOf(0);
@@ -706,18 +742,34 @@ public class ODAlgorithm {
 //                        FDODScore fdodScore = new FDODScore(score, X_minus_AB, oneAB, true);
                             numOfAODLIS++;
                             violationRatioLIS = (double) numRemovalLIS/numberTuples;
-                            System.out.println("***** violationRatio LIS:" + violationRatioLIS);
+//                            System.out.println("***** violationRatio LIS:" + violationRatioLIS);
+                            isApproxLIS = true;
                         }
-                        if (numRemovalGreedy > 0 && numRemovalGreedy < MainClass.violationThreshold && MainClass.approxODBoolean) {
+                        if (numRemovalGreedy > 0 && numRemovalGreedy <= MainClass.violationThreshold && MainClass.approxODBoolean) {
                             numofAODGreedy++;
                             violationRatioGreedy = (double) numRemovalGreedy/numberTuples;
-                            System.out.println("***** violationRatio Greedy:" + violationRatioGreedy);
+//                            System.out.println("***** violationRatio Greedy:" + violationRatioGreedy);
+                            isApproxGreedy = true;
                         }
                         
                         if (MainClass.approxAlgo.equals("Both") && numRemovalGreedy > 0) {
                             improvementPercentage += (violationRatioGreedy - violationRatioLIS) / violationRatioGreedy;
-                            if ((violationRatioGreedy - violationRatioLIS) / violationRatioGreedy > 0)
-                                System.out.println("yo look at this " + ((violationRatioGreedy - violationRatioLIS) / violationRatioGreedy * 100));
+                            if ((violationRatioGreedy - violationRatioLIS) / violationRatioGreedy > 0) {
+                                System.out.println("Found a discrepancy with " + numRemovalLIS + " and " + numRemovalGreedy);
+                                FDODScore fdodScore = new FDODScore(BigInteger.ONE.negate(), X_minus_AB, oneAB);
+                                greedyDifferent.add(fdodScore);
+                                greedyDifferentNumbers.add(numRemovalLIS);
+                                greedyDifferentNumbers.add(numRemovalGreedy);
+                            }
+                            
+                        }
+                        
+                        if (MainClass.approxAlgo.equals("Both") && isApproxLIS && !isApproxGreedy) {
+                            FDODScore fdodScore = new FDODScore(BigInteger.ONE.negate(), X_minus_AB, oneAB);
+                            greedyMissed.add(fdodScore);
+                            greedyMissedNumbers.add(numRemovalLIS);
+                            greedyMissedNumbers.add(numRemovalGreedy);
+                            
                         }
                     }
                 }

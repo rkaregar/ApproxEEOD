@@ -214,6 +214,12 @@ public class MainClass {
                             bw.write((ODAlgorithm.timeAODLIS / 1000000) + "\ttime iterative (ms)\n");
                             bw.write((ODAlgorithm.timeAODGreedy / 1000000) + "\ttime iterative (ms)\n");
                             bw.write((ODAlgorithm.improvementPercentage * 100 / ODAlgorithm.numofAODGreedy) + "\timprovement %\n");
+                            
+                            bw.write("------------------Missed AODs----------------------\n");
+                            bw.write(ODAlgorithm.missedODFDString.toString());
+                            bw.write("-----------------Different AODs--------------------\n");
+                            bw.write(ODAlgorithm.differentODFDString.toString());
+
 //            for(String str : odList)
 //                bw.write(str + "\n");
                             
