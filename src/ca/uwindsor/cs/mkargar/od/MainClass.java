@@ -81,6 +81,7 @@ public class MainClass {
         
         //TANE      FastOD      ORDER
         //Comma     Tab
+        String[] fileNames = {};
         String[] rows = {};
         String[] cols = {};
         String[] approxes = {};
@@ -89,7 +90,8 @@ public class MainClass {
         try {
             BufferedReader br = new BufferedReader(new FileReader(ConfigFileName));
             
-            DatasetFileName = br.readLine().trim();
+            fileNames = br.readLine().trim().split(",");
+//            DatasetFileName = br.readLine().trim();
             AlgorithmName = br.readLine().trim();
             
             rows = br.readLine().trim().split(",");
@@ -148,84 +150,87 @@ public class MainClass {
         
         
         // Allowing list of # of rows, # of columns, and approximation factors
-        for (String row : rows) {
-            for (String col : cols) {
-                for (String approx : approxes) {
-                    for (String algo : approxAlgos) {
-                        approxAlgo = algo;
-                        MaxRowNumber = Integer.parseInt(row);
-                        MaxColumnNumber = Integer.parseInt(col);
-                        violationThreshold = Integer.parseInt(approx);
-                        
-                        TaneAlgorithm taneAlgorithm = new TaneAlgorithm();
-                        
-                        ODAlgorithm ODAlgorithm = new ODAlgorithm();
-                        
-                        
-                        ORDERLhsRhs ORDERAlgorithm = new ORDERLhsRhs();
-                        
-                        System.out.println("Algorithm: " + AlgorithmName);
-                        System.out.println("InterestingnessPrune: " + InterestingnessPrune);
-                        System.out.println("InterestingnessThreshold: " + InterestingnessThreshold);
-                        System.out.println("BidirectionalTrue: " + BidirectionalTrue);
-                        System.out.println("BidirectionalPruneTrue: " + BidirectionalPruneTrue);
-                        
-                        long runt = -1;
-                        try {
-                            long startTime = System.currentTimeMillis();
+        for (String fileName : fileNames) {
+            for (String row : rows) {
+                for (String col : cols) {
+                    for (String approx : approxes) {
+                        for (String algo : approxAlgos) {
+                            DatasetFileName = fileName;
+                            approxAlgo = algo;
+                            MaxRowNumber = Integer.parseInt(row);
+                            MaxColumnNumber = Integer.parseInt(col);
+                            violationThreshold = Integer.parseInt(approx);
                             
-                            for (int i = 0; i < RunTimeNumber; i++) {
+                            TaneAlgorithm taneAlgorithm = new TaneAlgorithm();
+                            
+                            ODAlgorithm ODAlgorithm = new ODAlgorithm();
+                            
+                            
+                            ORDERLhsRhs ORDERAlgorithm = new ORDERLhsRhs();
+                            
+                            System.out.println("Algorithm: " + AlgorithmName);
+                            System.out.println("InterestingnessPrune: " + InterestingnessPrune);
+                            System.out.println("InterestingnessThreshold: " + InterestingnessThreshold);
+                            System.out.println("BidirectionalTrue: " + BidirectionalTrue);
+                            System.out.println("BidirectionalPruneTrue: " + BidirectionalPruneTrue);
+                            
+                            long runt = -1;
+                            try {
+                                long startTime = System.currentTimeMillis();
                                 
-                                if (AlgorithmName.equals("TANE"))
-                                    taneAlgorithm.execute();
+                                for (int i = 0; i < RunTimeNumber; i++) {
+                                    
+                                    if (AlgorithmName.equals("TANE"))
+                                        taneAlgorithm.execute();
+                                    
+                                    if (AlgorithmName.equals("FastOD"))
+                                        ODAlgorithm.execute();
+                                    
+                                    if (AlgorithmName.equals("ORDER"))
+                                        ORDERAlgorithm.execute();
+                                    
+                                    FirstTimeRun = false;
+                                }
                                 
-                                if (AlgorithmName.equals("FastOD"))
-                                    ODAlgorithm.execute();
+                                long endTime = System.currentTimeMillis();
+                                long runTime = (endTime - startTime) / RunTimeNumber;
                                 
-                                if (AlgorithmName.equals("ORDER"))
-                                    ORDERAlgorithm.execute();
+                                System.out.println("Run Time (ms): " + runTime);
                                 
-                                FirstTimeRun = false;
+                                runt = runTime;
+                            } catch (Exception ex) {
+                                System.out.println("Error");
+                                ex.printStackTrace();
                             }
                             
-                            long endTime = System.currentTimeMillis();
-                            long runTime = (endTime - startTime) / RunTimeNumber;
+                            printTime();
                             
-                            System.out.println("Run Time (ms): " + runTime);
-                            
-                            runt = runTime;
-                        } catch (Exception ex) {
-                            System.out.println("Error");
-                            ex.printStackTrace();
-                        }
-                        
-                        printTime();
-                        
-                        //print results to a file
-                        try {
-                            BufferedWriter bw =
-                                    new BufferedWriter(new FileWriter("logs/" + DatasetFileName + "-" +
-                                            MaxRowNumber + "r-" + MaxColumnNumber + "c-" + approx + "v-" + approxAlgo + ".txt"));
-                            
-                            bw.write(runt + "\truntime (ms)\n");
-                            bw.write(ODAlgorithm.numberOfOD + "\t# of OD\n");
-                            bw.write(ODAlgorithm.numOfAODLIS + "\t# of AOD lis\n");
-                            bw.write(ODAlgorithm.numofAODGreedy + "\t# of AOD iterative\n");
-                            bw.write((ODAlgorithm.timeAODLIS / 1000000) + "\ttime iterative (ms)\n");
-                            bw.write((ODAlgorithm.timeAODGreedy / 1000000) + "\ttime iterative (ms)\n");
-                            bw.write((ODAlgorithm.improvementPercentage * 100 / ODAlgorithm.numofAODGreedy) + "\timprovement %\n");
-                            
-                            bw.write("------------------Missed AODs----------------------\n");
-                            bw.write(ODAlgorithm.missedODFDString.toString());
-                            bw.write("-----------------Different AODs--------------------\n");
-                            bw.write(ODAlgorithm.differentODFDString.toString());
+                            //print results to a file
+                            try {
+                                BufferedWriter bw =
+                                        new BufferedWriter(new FileWriter("logs/" + DatasetFileName + "-" +
+                                                MaxRowNumber + "r-" + MaxColumnNumber + "c-" + approx + "v-" + approxAlgo + ".txt"));
+                                
+                                bw.write(runt + "\truntime (ms)\n");
+                                bw.write(ODAlgorithm.numberOfOD + "\t# of OD\n");
+                                bw.write(ODAlgorithm.numOfAODLIS + "\t# of AOD lis\n");
+                                bw.write(ODAlgorithm.numofAODGreedy + "\t# of AOD iterative\n");
+                                bw.write((ODAlgorithm.timeAODLIS / 1000000) + "\ttime iterative (ms)\n");
+                                bw.write((ODAlgorithm.timeAODGreedy / 1000000) + "\ttime iterative (ms)\n");
+                                bw.write((ODAlgorithm.improvementPercentage * 100 / ODAlgorithm.numofAODGreedy) + "\timprovement %\n");
+                                
+                                bw.write("------------------Missed AODs----------------------\n");
+                                bw.write(ODAlgorithm.missedODFDString.toString());
+                                bw.write("-----------------Different AODs--------------------\n");
+                                bw.write(ODAlgorithm.differentODFDString.toString());
 
 //            for(String str : odList)
 //                bw.write(str + "\n");
-                            
-                            bw.close();
-                        } catch (Exception ex) {
-                            System.out.println("Writing output failed.");
+                                
+                                bw.close();
+                            } catch (Exception ex) {
+                                System.out.println("Writing output failed.");
+                            }
                         }
                     }
                 }

@@ -1,4 +1,4 @@
-ncvldb.csv
+flightvldbj.csv
 FastOD
 5000
 10
@@ -13,6 +13,6 @@ RankDoubleTrue
 ReverseRankingTrueF
 BidirectionalPruneTrueF
 9999
-8
+2
 1
-Both
+LIS
