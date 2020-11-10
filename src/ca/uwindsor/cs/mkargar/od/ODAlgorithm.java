@@ -52,6 +52,7 @@ public class ODAlgorithm {
     public List<FDODScore> greedyDifferent;
     public List<Integer> greedyDifferentNumbers;
     StringBuilder missedODFDString, differentODFDString;
+    public List<Integer> odPerLevelCount;
     
     
     
@@ -80,6 +81,10 @@ public class ODAlgorithm {
         greedyDifferentNumbers = new ArrayList<>();
         missedODFDString = new StringBuilder();
         differentODFDString = new StringBuilder();
+        odPerLevelCount = new ArrayList<>();
+        for (int i = 0; i < MainClass.MaxColumnNumber + 2; i++) {
+            odPerLevelCount.add(0);
+        }
     
     
     
@@ -243,8 +248,16 @@ public class ODAlgorithm {
             System.out.println("num: " + numOfAODLIS + " vs. " + numofAODGreedy + ", thus: " + ((numOfAODLIS * 100. / numofAODGreedy) - 100));
             System.out.println("time: " + timeAODLIS + " vs. " + timeAODGreedy + ", thus: " + (100 - (timeAODLIS * 100. / timeAODGreedy)));
             System.out.println("improvement: " + (improvementPercentage * 100 / numofAODGreedy));
-            System.out.println("-----------------Different AODs--------------------");
+    
+            int odLevelCnt = 0, odTotalCnt = 0;
+            for (int i = 0; i < odPerLevelCount.size(); i++) {
+                odLevelCnt += odPerLevelCount.get(i) * i;
+                odTotalCnt += odPerLevelCount.get(i);
+            }
+            System.out.println((double)odLevelCnt / odTotalCnt + " average OD level");
+            System.out.println(odPerLevelCount);
             
+            System.out.println("-----------------Different AODs--------------------");
             for (int i = 0; i < greedyDifferent.size(); i++) {
                 FDODScore score = greedyDifferent.get(i);
                 String nums = greedyDifferentNumbers.get(2 * i) + ", " + greedyDifferentNumbers.get(2 * i + 1) + ", " +
@@ -727,6 +740,9 @@ public class ODAlgorithm {
                         //calculate interestingness score
                         numberOfOD++;
                         removeFromC_s_List.add(oneAB);
+                        
+                        odPerLevelCount.set(L, odPerLevelCount.get(L) + 1);
+                        
                     } else {
                         double violationRatioLIS = -1, violationRatioGreedy = -1;
                         boolean isApproxLIS = false, isApproxGreedy = false;
@@ -769,7 +785,11 @@ public class ODAlgorithm {
                             greedyMissed.add(fdodScore);
                             greedyMissedNumbers.add(numRemovalLIS);
                             greedyMissedNumbers.add(numRemovalGreedy);
-                            
+                        }
+                        
+                        if (isApproxLIS || isApproxGreedy) {
+                            removeFromC_s_List.add(oneAB);
+                            odPerLevelCount.set(L, odPerLevelCount.get(L) + 1);
                         }
                     }
                 }

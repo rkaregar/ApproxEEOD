@@ -215,9 +215,17 @@ public class MainClass {
                                 bw.write(ODAlgorithm.numberOfOD + "\t# of OD\n");
                                 bw.write(ODAlgorithm.numOfAODLIS + "\t# of AOD lis\n");
                                 bw.write(ODAlgorithm.numofAODGreedy + "\t# of AOD iterative\n");
-                                bw.write((ODAlgorithm.timeAODLIS / 1000000) + "\ttime iterative (ms)\n");
+                                bw.write((ODAlgorithm.timeAODLIS / 1000000) + "\ttime LIS (ms)\n");
                                 bw.write((ODAlgorithm.timeAODGreedy / 1000000) + "\ttime iterative (ms)\n");
                                 bw.write((ODAlgorithm.improvementPercentage * 100 / ODAlgorithm.numofAODGreedy) + "\timprovement %\n");
+                                
+                                int odLevelCnt = 0, odTotalCnt = 0;
+                                for (int i = 0; i < ODAlgorithm.odPerLevelCount.size(); i++) {
+                                    odLevelCnt += ODAlgorithm.odPerLevelCount.get(i) * i;
+                                    odTotalCnt += ODAlgorithm.odPerLevelCount.get(i);
+                                }
+                                bw.write((double)odLevelCnt / odTotalCnt + " average OD level\n");
+                                bw.write(ODAlgorithm.odPerLevelCount + " ODs per level\n");
                                 
                                 bw.write("------------------Missed AODs----------------------\n");
                                 bw.write(ODAlgorithm.missedODFDString.toString());
