@@ -100,7 +100,7 @@ public class ODAlgorithm {
         numberAttributes = this.columnNames.size();
 
         //Jarek
-        double percent = (double)MainClass.violationThreshold/100.0;
+        double percent = (double)MainClass.violationThreshold/100.0; // / 10.;  // todo BE CAREFUL REMOVE THE / 10. part!!!
         MainClass.violationThreshold = (int)(percent * numberTuples);
 
         System.out.println("violationThreshold:" + MainClass.violationThreshold);
@@ -770,7 +770,8 @@ public class ODAlgorithm {
                         
                         if (MainClass.approxAlgo.equals("Both") && numRemovalGreedy > 0) {
                             improvementPercentage += (violationRatioGreedy - violationRatioLIS) / violationRatioGreedy;
-                            if ((violationRatioGreedy - violationRatioLIS) / violationRatioGreedy > 0) {
+//                            if ((violationRatioGreedy - violationRatioLIS) / violationRatioGreedy > 0) {
+                            if (1 < 2) {  // todo this of course should be changed
                                 System.out.println("Found a discrepancy with " + numRemovalLIS + " and " + numRemovalGreedy);
                                 FDODScore fdodScore = new FDODScore(BigInteger.ONE.negate(), X_minus_AB, oneAB);
                                 greedyDifferent.add(fdodScore);

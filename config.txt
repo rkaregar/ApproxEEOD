@@ -1,4 +1,4 @@
-flightvldbj.csv
+test.csv
 FastOD
 10000
 10
@@ -13,6 +13,6 @@ RankDoubleTrue
 ReverseRankingTrueF
 BidirectionalPruneTrueF
 9999
+99
 1
-1
-None,LIS
+Both
