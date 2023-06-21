@@ -1,0 +1,18 @@
+<dataset_name>
+FastOD
+<num_of_rows>
+<num_of_attributes>
+<num_of_runs>
+,
+PruneTrue
+InterestingnessPruneTrueF
+100000000000
+100
+BidirectionalTrueF
+RankDoubleTrue
+ReverseRankingTrueF
+BidirectionalPruneTrueF
+9999
+<violation_threshold>  // comma-delimitted values
+1
+<approximate_algorithms> // options are "LIS", "Greedy", "Both", and "None"
