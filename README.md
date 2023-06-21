@@ -10,8 +10,8 @@ javac -d ../../../../../../out -cp .:../../../../../../lib/* *.java */*.java */*
 
 ## 2. Set up the config file and dataset
 
-Ensure you fill up the `config.txt` file properly. This file is l
-ocated in `/out` folder. A sample config file is located in the root 
+Ensure you fill up the `config.txt` file properly. This file is
+located in `/out` folder. A sample config file is located in the root 
 direcotry. Also, put the dataset inside the `/out` folder.
 
 ## 3. Run the code
