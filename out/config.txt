@@ -13,6 +13,6 @@ RankDoubleTrue
 ReverseRankingTrueF
 BidirectionalPruneTrueF
 9999
-<violation_threshold>  // comma-delimitted values
+<violation_threshold(s)>  // comma-delimitted values (or a single value)
 1
 <approximate_algorithms> // options are "LIS", "Greedy", "Both", and "None"
